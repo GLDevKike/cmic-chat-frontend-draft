@@ -1,0 +1,52 @@
+<div class="chat-layout">
+  <div class="chat-header">
+    <img src="assets/images/logo-cmic.png" alt="CMIC Logo" class="logo" />
+    <h1>¡Hola! Bienvenido</h1>
+    <p class="description">
+      Pregunta sobre la cobertura, calidad del servicio, fallas reportadas y
+      ubicación de estaciones móviles en cualquier municipio de Colombia. Obtén
+      respuestas claras y actualizadas por operador y tecnología.
+    </p>
+  </div>
+
+  <div class="chat-content">
+    <div class="question-panel">
+      <form [formGroup]="form" (ngSubmit)="doSend()">
+        <app-card title="Haz tu pregunta" [hasFooter]="true">
+          <app-text-area
+            [control]="question"
+            [rows]="19"
+            [cols]="68"
+            variant="filled"
+            placeholder="Escribe tu pregunta aquí..."
+          ></app-text-area>
+
+          <div footer>
+            <app-button
+              [disabled]="form.invalid"
+              label="Enviar"
+              size="large"
+              icon="pi pi-arrow-right"
+              type="submit"
+              severity="info"
+            ></app-button>
+          </div>
+        </app-card>
+      </form>
+    </div>
+
+    <div class="response-panel">
+      <app-card title="Respuesta">
+        <div class="response-content" *ngIf="response; else noResponse">
+          <p>{{ response }}</p>
+        </div>
+        <ng-template #noResponse>
+          <div class="no-response">
+            <i class="pi pi-comment"></i>
+            <p>Tu respuesta aparecerá aquí...</p>
+          </div>
+        </ng-template>
+      </app-card>
+    </div>
+  </div>
+</div>

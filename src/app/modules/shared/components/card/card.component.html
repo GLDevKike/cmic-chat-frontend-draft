@@ -1,0 +1,15 @@
+<p-card>
+  @if (title) {
+  <ng-template pTemplate="title">{{ title }}</ng-template>
+  } @if (subtitle) {
+  <ng-template pTemplate="subtitle">{{ subtitle }}</ng-template>
+  }
+
+  <ng-content></ng-content>
+
+  @if (hasFooter) {
+  <ng-template pTemplate="footer">
+    <ng-content select="[footer]"></ng-content>
+  </ng-template>
+  }
+</p-card>
