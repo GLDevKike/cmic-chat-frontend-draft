@@ -15,8 +15,9 @@
         <app-card title="Haz tu pregunta" [hasFooter]="true">
           <app-text-area
             [control]="question"
-            [rows]="19"
-            [cols]="68"
+            [rows]="14"
+            [cols]="52"
+            [autoResize]="true"
             variant="filled"
             placeholder="Escribe tu pregunta aquí..."
           ></app-text-area>
@@ -37,15 +38,16 @@
 
     <div class="response-panel">
       <app-card title="Respuesta">
-        <div class="response-content" *ngIf="response; else noResponse">
+        @if (response) {
+        <div class="response-content">
           <p>{{ response }}</p>
         </div>
-        <ng-template #noResponse>
-          <div class="no-response">
-            <i class="pi pi-comment"></i>
-            <p>Tu respuesta aparecerá aquí...</p>
-          </div>
-        </ng-template>
+        } @else {
+        <div class="no-response">
+          <i class="pi pi-comment"></i>
+          <p>Tu respuesta aparecerá aquí...</p>
+        </div>
+        }
       </app-card>
     </div>
   </div>
