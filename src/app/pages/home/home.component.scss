@@ -138,6 +138,7 @@
 
 .response-content {
     flex: 1;
+    max-height: 350px;
     overflow-y: auto;
     padding: 20px;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -172,6 +173,7 @@
 
 .no-response {
     flex: 1;
+    max-height: 350px;
     display: flex;
     flex-direction: column;
     align-items: center;
