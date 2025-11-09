@@ -16,7 +16,7 @@
           <app-text-area
             [control]="question"
             [rows]="14"
-            [cols]="52"
+            [cols]="51"
             [autoResize]="true"
             variant="filled"
             placeholder="Escribe tu pregunta aquí..."
@@ -24,7 +24,8 @@
 
           <div footer>
             <app-button
-              [disabled]="form.invalid"
+              [disabled]="form.invalid || isLoading"
+              [isLoading]="isLoading"
               label="Enviar"
               size="large"
               icon="pi pi-arrow-right"

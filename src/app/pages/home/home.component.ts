@@ -16,6 +16,7 @@ export class HomeComponent implements OnInit {
   public form!: FormGroup;
   public question!: FormControl;
   public response: string | null = null;
+  protected isLoading: boolean = false;
 
   constructor(private readonly _httpService: HttpService) {}
 
@@ -24,6 +25,7 @@ export class HomeComponent implements OnInit {
   }
 
   protected async doSend() {
+    this.isLoading = true;
     this.response = null;
 
     try {
@@ -40,6 +42,8 @@ export class HomeComponent implements OnInit {
     } catch (error) {
       console.error('Error:', error);
       this.response = 'Lo siento. Ocurrió un error al procesar tu petición.';
+    } finally {
+      this.isLoading = false;
     }
   }
 

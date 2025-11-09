@@ -20,4 +20,5 @@ export class ButtonComponent {
   @Input() icon!: string;
   @Input() iconPosition: IconPosition = 'right';
   @Input() disabled: boolean = false;
+  @Input() isLoading: boolean = false;
 }
