@@ -1,0 +1,5 @@
+export const ENVIRONMENT = {
+  PRODUCTION: false,
+  AGENT_URL: 'YOUR_AGENT_URL',
+  AGENT_SECRET_KEY: 'YOUR_AGENT_SECRET_KEY',
+} as const;

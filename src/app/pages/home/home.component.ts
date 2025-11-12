@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
-  IChat,
+  IChatRequest,
   IChatResponse,
 } from '../../modules/shared/interfaces/chat.interface';
 import { HttpService } from '../../modules/shared/services/http.service';
-import { ENVIRONMENT } from '../../../environments/environment.dev';
+import { ENVIRONMENT } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -15,30 +15,29 @@ import { ENVIRONMENT } from '../../../environments/environment.dev';
 export class HomeComponent implements OnInit {
   public form!: FormGroup;
   public question!: FormControl;
-  public response: string | null = null;
+  public response: string | unknown;
   protected isLoading: boolean = false;
 
   constructor(private readonly _httpService: HttpService) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.initForm();
   }
 
   protected async doSend() {
     this.isLoading = true;
-    this.response = null;
 
     try {
-      const response = await this._httpService.post<IChat, IChatResponse>(
-        ENVIRONMENT.AGENT_URL,
-        {
-          pregunta: this.form.value.question,
-        }
-      );
+      const { response } = await this._httpService.post<
+        IChatRequest,
+        IChatResponse
+      >(ENVIRONMENT.API_URL, {
+        message: this.form.value.question,
+      });
 
       console.log('🚀 ~ HomeComponent ~ doSend ~ response:', response);
 
-      this.response = response.respuesta;
+      this.response = response;
     } catch (error) {
       console.error('Error:', error);
       this.response = 'Lo siento. Ocurrió un error al procesar tu petición.';
