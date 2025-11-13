@@ -10,6 +10,8 @@ import { CardModule } from 'primeng/card';
 import { AppRoutingModule } from '../../app-routing.module';
 import { ToastComponent } from './components/toast/toast.component';
 import { ToastModule } from 'primeng/toast';
+import { InputComponent } from './components/input/input.component';
+import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
   declarations: [
@@ -17,6 +19,7 @@ import { ToastModule } from 'primeng/toast';
     ButtonComponent,
     CardComponent,
     ToastComponent,
+    InputComponent,
   ],
   imports: [
     CommonModule,
@@ -27,7 +30,14 @@ import { ToastModule } from 'primeng/toast';
     CardModule,
     AppRoutingModule,
     ToastModule,
+    InputTextModule,
   ],
-  exports: [TextAreaComponent, ButtonComponent, CardComponent, ToastComponent],
+  exports: [
+    TextAreaComponent,
+    ButtonComponent,
+    CardComponent,
+    ToastComponent,
+    InputComponent,
+  ],
 })
 export class SharedModule {}
