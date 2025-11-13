@@ -5,152 +5,60 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
 }
 
 .chat-header {
     text-align: center;
-    margin-bottom: 40px;
-    max-width: 1100px;
+    margin-bottom: 30px;
+    max-width: 900px;
     width: 100%;
 
     .logo {
-        max-width: 180px;
+        max-width: 140px;
         height: auto;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 4px 6px rgba(58, 92, 245, 0.2));
     }
 
     h1 {
         color: #3a5cf5;
-        font-size: 2.8rem;
+        font-size: 2.4rem;
         font-weight: 800;
-        margin: 0 0 18px 0;
-        letter-spacing: -0.5px;
+        margin: 0 0 16px 0;
+        text-shadow: 0 2px 4px rgba(58, 92, 245, 0.1);
     }
 
     .description {
-        color: #4a5568;
-        font-size: 1.1rem;
+        color: #64748b;
+        font-size: 1.05rem;
         line-height: 1.6;
         margin: 0 auto;
-        padding: 0 80px;
+        max-width: 900px;
         font-weight: 400;
-        text-align: center;
     }
 }
 
-.chat-content {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 30px;
-    max-width: 1100px;
+.chat-container {
+    max-width: 900px;
     width: 100%;
-    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 280px);
+    min-height: 500px;
+    overflow: hidden;
 }
 
-.question-panel,
-.response-panel {
-    animation: fadeIn 0.6s ease-out;
-
-    ::ng-deep {
-        .p-card {
-            background: white;
-            backdrop-filter: blur(20px);
-            box-shadow:
-                0 10px 30px -5px rgba(0, 0, 0, 0.08),
-                0 0 0 1px rgba(0, 0, 0, 0.02);
-            border-radius: 24px;
-            border: none;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-
-            &:hover {
-                box-shadow:
-                    0 20px 40px -10px rgba(102, 126, 234, 0.2),
-                    0 0 0 1px rgba(102, 126, 234, 0.1);
-                transform: translateY(-6px);
-            }
-        }
-
-        .p-card-body {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .p-card-title {
-            color: #acb7cc;
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .p-card-content {
-            padding: 0;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-    }
-}
-
-.question-panel {
-    ::ng-deep {
-        .p-card-footer {
-            padding-top: 18px;
-            border-top: none;
-            display: flex;
-            justify-content: flex-end;
-            background: transparent;
-            margin: 0;
-            padding: 18px 0 0 0;
-        }
-
-        .p-inputtextarea {
-            width: 100%;
-            height: 100%;
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
-            font-size: 0.98rem;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            transition: all 0.3s ease;
-            padding: 14px 18px;
-            color: #64748b;
-            line-height: 1.6;
-            resize: none;
-
-            &::placeholder {
-                color: #cbd5e1;
-                font-weight: 400;
-            }
-
-            &:focus {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-                color: #475569;
-            }
-        }
-    }
-}
-
-.response-content {
+.chat-messages {
     flex: 1;
-    max-height: 350px;
     overflow-y: auto;
-    padding: 20px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-radius: 16px;
-    line-height: 1.7;
-    font-size: 1rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    color: #64748b;
-    font-weight: 400;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    border: 1px solid #e2e8f0;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
 
     &::-webkit-scrollbar {
         width: 6px;
@@ -158,53 +66,209 @@
 
     &::-webkit-scrollbar-track {
         background: #f1f5f9;
-        border-radius: 10px;
     }
 
     &::-webkit-scrollbar-thumb {
         background: #cbd5e1;
         border-radius: 10px;
-
-        &:hover {
-            background: #94a3b8;
-        }
     }
 }
 
-.no-response {
+.empty-state {
     flex: 1;
-    max-height: 350px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: #cbd5e1;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
+    padding: 40px 20px;
 
     i {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.25;
+        font-size: 5rem;
+        margin-bottom: 24px;
         background: linear-gradient(135deg, #3a5cf5 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        background-clip: text;
+        opacity: 0.4;
+    }
+
+    h3 {
+        font-size: 1.6rem;
+        color: #475569;
+        margin: 0 0 12px 0;
+        font-weight: 700;
     }
 
     p {
-        font-size: 1.1rem;
+        color: #94a3b8;
         margin: 0;
-        font-weight: 400;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        font-size: 1.05rem;
+    }
+}
+
+.message-wrapper {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+
+    &.user {
+        justify-content: flex-end;
+
+        .message-bubble {
+            background: linear-gradient(135deg, #3a5cf5 0%, #667eea 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(58, 92, 245, 0.25);
+        }
+    }
+
+    &.assistant {
+        justify-content: flex-start;
+
+        .message-bubble {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+    }
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    word-wrap: break-word;
+
+    &.streaming {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    &.typing {
+        padding: 20px;
+    }
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    opacity: 0.9;
+
+    i {
+        font-size: 1rem;
+    }
+}
+
+.message-content {
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.typing-indicator {
+    display: flex;
+    gap: 6px;
+
+    span {
+        width: 8px;
+        height: 8px;
+        background: #94a3b8;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+
+        &:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    }
+}
+
+.chat-input-container {
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 20px;
+    background: #fafbfc;
+}
+
+.input-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+
+    .clear-btn {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        &:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        i {
+            font-size: 0.9rem;
+        }
+    }
+}
+
+.chat-input-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+
+    ::ng-deep {
+        app-input {
+            flex: 1;
+        }
+
+        .p-inputtext {
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            padding: 12px 16px;
+            height: 48px;
+            transition: all 0.2s ease;
+
+            &:focus {
+                border-color: #3a5cf5;
+                box-shadow: 0 0 0 3px rgba(58, 92, 245, 0.1);
+            }
+
+            &:hover {
+                border-color: #cbd5e1;
+            }
+        }
+
+        app-button button {
+            min-width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(58, 92, 245, 0.3);
+            }
+        }
     }
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(10px);
     }
 
     to {
@@ -213,42 +277,62 @@
     }
 }
 
-@media (max-width: 992px) {
-    .chat-layout {
-        padding: 30px 15px;
+@keyframes bounce {
+
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
     }
 
-    .chat-header {
-        margin-bottom: 30px;
-
-        h1 {
-            font-size: 2.2rem;
-        }
-
-        .description {
-            font-size: 1rem;
-            padding: 0 20px;
-        }
-    }
-
-    .chat-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    30% {
+        transform: translateY(-10px);
     }
 }
 
-@media (max-width: 576px) {
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@media (max-width: 768px) {
     .chat-header {
         h1 {
-            font-size: 1.8rem;
-        }
-
-        .logo {
-            max-width: 140px;
+            font-size: 2rem;
         }
 
         .description {
-            padding: 0 15px;
+            font-size: 0.95rem;
+        }
+    }
+
+    .chat-container {
+        height: calc(100vh - 240px);
+        border-radius: 16px;
+    }
+
+    .message-bubble {
+        max-width: 85%;
+    }
+
+    .chat-input-form {
+        ::ng-deep {
+            .p-inputtext {
+                font-size: 0.9rem;
+                padding: 10px 14px;
+            }
+
+            app-button button {
+                min-width: 44px;
+                height: 44px;
+            }
         }
     }
 }
