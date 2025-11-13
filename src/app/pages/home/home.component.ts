@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   IChatRequest,
@@ -14,13 +20,16 @@ import { LOCAL_STORAGE_KEY } from '../../modules/shared/constants/local-storage-
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewChecked {
+  @ViewChild('chatContainer') private chatContainer!: ElementRef;
+
   protected form!: FormGroup;
   protected question!: FormControl;
-  protected messages: string[] = [];
-  protected isLoading: boolean = false;
   protected history: IHistory[] = [];
-  private readonly MAX_HISTORY_ITEMS = 10;
+  protected isLoading: boolean = false;
+  protected streamingMessage: string = '';
+  private readonly MAX_HISTORY_ITEMS = 20;
+  private shouldScrollToBottom = false;
 
   constructor(
     private readonly _httpService: HttpService,
@@ -29,28 +38,35 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    this.history =
-      this._localStorageService.getObject<IHistory[]>(
-        LOCAL_STORAGE_KEY.HISTORY
-      ) || [];
+    this.loadHistory();
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
   }
 
   protected doSend() {
-    this.messages = [];
-    this.isLoading = true;
+    if (this.form.invalid || this.isLoading) return;
 
-    const question = this.form.value.question;
+    const question = this.form.value.question.trim();
+    if (!question) return;
+
+    this.streamingMessage = '';
+    this.isLoading = true;
 
     const userQuestion: IHistory = {
       role: 'user',
       content: question,
     };
 
-    const prevHistory =
-      this._localStorageService.getObject<IHistory[]>(
-        LOCAL_STORAGE_KEY.HISTORY
-      ) || [];
+    this.history.push(userQuestion);
+    this.form.reset();
+    this.shouldScrollToBottom = true;
 
+    const prevHistory = this.history.slice(0, -1);
     const requestHistory = [...prevHistory, userQuestion].slice(
       -this.MAX_HISTORY_ITEMS
     );
@@ -62,43 +78,66 @@ export class HomeComponent implements OnInit {
       })
       .subscribe({
         next: (chunk) => {
-          this.messages.push(chunk);
+          this.streamingMessage += chunk;
+          this.shouldScrollToBottom = true;
         },
         complete: () => {
           const assistantResponse: IHistory = {
             role: 'assistant',
-            content: this.messages.join(''),
+            content: this.streamingMessage,
           };
 
-          const updatedHistory = [
-            ...prevHistory,
-            userQuestion,
-            assistantResponse,
-          ].slice(-this.MAX_HISTORY_ITEMS);
+          this.history.push(assistantResponse);
+          this.streamingMessage = '';
 
+          const truncatedHistory = this.history.slice(-this.MAX_HISTORY_ITEMS);
           this._localStorageService.saveObject(
             LOCAL_STORAGE_KEY.HISTORY,
-            updatedHistory
+            truncatedHistory
           );
 
-          this.history = updatedHistory;
+          this.history = truncatedHistory;
           this.isLoading = false;
-          this.form.reset();
+          this.shouldScrollToBottom = true;
         },
         error: (err) => {
           console.error('Error:', err);
-          this.messages = [
-            'Lo siento. Ocurrió un error al procesar tu petición.',
-          ];
+          this.history.push({
+            role: 'assistant',
+            content: 'Lo siento. Ocurrió un error al procesar tu petición.',
+          });
+          this.streamingMessage = '';
           this.isLoading = false;
+          this.shouldScrollToBottom = true;
         },
       });
+  }
+
+  protected clearHistory() {
+    this.history = [];
+    this.streamingMessage = '';
+    this._localStorageService.remove(LOCAL_STORAGE_KEY.HISTORY);
+  }
+
+  private loadHistory() {
+    this.history =
+      this._localStorageService.getObject<IHistory[]>(
+        LOCAL_STORAGE_KEY.HISTORY
+      ) || [];
+    this.shouldScrollToBottom = true;
+  }
+
+  private scrollToBottom(): void {
+    try {
+      this.chatContainer.nativeElement.scrollTop =
+        this.chatContainer.nativeElement.scrollHeight;
+    } catch (err) {}
   }
 
   private initForm() {
     this.question = new FormControl('', [
       Validators.required,
-      Validators.minLength(8),
+      Validators.minLength(3),
       Validators.maxLength(600),
     ]);
 
