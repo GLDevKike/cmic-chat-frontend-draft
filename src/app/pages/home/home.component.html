@@ -9,51 +9,110 @@
     </p>
   </div>
 
-  <div class="chat-content">
-    <div class="question-panel">
-      <form [formGroup]="form" (ngSubmit)="doSend()">
-        <app-card title="Haz tu pregunta" [hasFooter]="true">
-          <app-text-area
-            [control]="question"
-            [rows]="14"
-            [cols]="51"
-            [autoResize]="true"
-            variant="filled"
-            placeholder="Escribe tu pregunta aquí..."
-          ></app-text-area>
-
-          <div footer>
-            <app-button
-              [disabled]="form.invalid || isLoading"
-              [isLoading]="isLoading"
-              label="Enviar"
-              size="large"
-              icon="pi pi-arrow-right"
-              type="submit"
-              severity="info"
-            ></app-button>
-          </div>
-        </app-card>
-      </form>
-    </div>
-
-    <div class="response-panel">
-      <app-card title="Respuesta">
-        @if (isLoading && messages.length === 0) {
-        <div class="no-response">
-          <p>Cargando respuesta...</p>
-        </div>
-        } @else if (messages.length > 0) {
-        <div class="response-content">
-          <p>{{ messages.join("") }}</p>
-        </div>
-        } @else {
-        <div class="no-response">
+  <div class="main-content" [class.split-view]="showDashboard">
+    <div class="chat-container" [class.collapsed]="showDashboard">
+      <div class="chat-messages" #chatContainer>
+        @if (history.length === 0 && !isLoading) {
+        <div class="empty-state">
           <i class="pi pi-comment"></i>
-          <p>Tu respuesta aparecerá aquí...</p>
+          <h3>¿En qué puedo ayudarte hoy?</h3>
+          <p>Escribe tu pregunta abajo para comenzar</p>
+        </div>
+        } @for (message of history; track $index) {
+        <div
+          class="message-wrapper"
+          [class.user]="message.role === 'user'"
+          [class.assistant]="message.role === 'assistant'"
+        >
+          <div class="message-bubble">
+            <div class="message-header">
+              <i
+                [class]="
+                  message.role === 'user' ? 'pi pi-user' : 'pi pi-sparkles'
+                "
+              ></i>
+              <span>{{ message.role === "user" ? "Tú" : "Asistente" }}</span>
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+          </div>
+        </div>
+        } @if (isLoading && streamingMessage) {
+        <div class="message-wrapper assistant">
+          <div class="message-bubble streaming">
+            <div class="message-header">
+              <i class="pi pi-sparkles"></i>
+              <span>Asistente</span>
+            </div>
+            <div class="message-content">{{ streamingMessage }}</div>
+          </div>
+        </div>
+        } @if (isLoading && !streamingMessage) {
+        <div class="message-wrapper assistant">
+          <div class="message-bubble typing">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
         </div>
         }
-      </app-card>
+      </div>
+
+      <div class="chat-input-container">
+        <div class="input-actions">
+          @if (history.length > 0) {
+          <button
+            type="button"
+            class="clear-btn"
+            (click)="clearHistory()"
+            title="Limpiar historial"
+          >
+            <i class="pi pi-trash"></i>
+          </button>
+          }
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="doSend()" class="chat-input-form">
+          <app-input
+            [control]="question"
+            variant="filled"
+            placeholder="Escribe tu pregunta aquí..."
+            (enterPressed)="doSend()"
+          ></app-input>
+
+          <app-button
+            [disabled]="form.invalid || isLoading"
+            [isLoading]="isLoading"
+            label=""
+            icon="pi pi-send"
+            type="submit"
+            severity="info"
+          ></app-button>
+        </form>
+      </div>
     </div>
+
+    @if (showDashboard && currentDashboardUrl) {
+    <div class="dashboard-container">
+      <div class="dashboard-header">
+        <h2>Tablero de Indicadores</h2>
+        <button
+          type="button"
+          class="close-dashboard-btn"
+          (click)="closeDashboard()"
+          title="Cerrar tablero"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+      <iframe
+        [src]="currentDashboardUrl | safe : 'resourceUrl'"
+        frameborder="0"
+        class="dashboard-iframe"
+        allowfullscreen
+      ></iframe>
+    </div>
+    }
   </div>
 </div>
