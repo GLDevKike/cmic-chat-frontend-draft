@@ -28,6 +28,12 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   protected history: IHistory[] = [];
   protected isLoading: boolean = false;
   protected streamingMessage: string = '';
+  protected currentDashboardUrl: string | null = null;
+  protected showDashboard: boolean = false;
+
+  private readonly TEST_DASHBOARD_URL =
+    'https://dataviz-dot-mintic-indicadores-calidad-prd.ue.r.appspot.com/CD-historico/?Operador=Movistar&Indicador=Ping&Fecha=2024-01&Tecnolog%C3%ADa=4G&%C3%81mbito=Rural&Departamento=BOL%C3%8DVAR&Municipio=CARTAGENA%20DE%20INDIAS&Localidad=';
+
   private readonly MAX_HISTORY_ITEMS = 20;
   private shouldScrollToBottom = false;
 
@@ -71,6 +77,8 @@ export class HomeComponent implements OnInit, AfterViewChecked {
       -this.MAX_HISTORY_ITEMS
     );
 
+    let accumulatedMessage = '';
+
     this._httpService
       .postStream<IChatRequest>(ENVIRONMENT.API_URL, {
         message: question,
@@ -78,17 +86,38 @@ export class HomeComponent implements OnInit, AfterViewChecked {
       })
       .subscribe({
         next: (chunk) => {
-          this.streamingMessage += chunk;
+          accumulatedMessage += chunk;
+          this.streamingMessage = accumulatedMessage;
           this.shouldScrollToBottom = true;
         },
         complete: () => {
+          let dashboardUrl: string | null = null;
+
+          try {
+            const jsonResponse = JSON.parse(accumulatedMessage);
+
+            dashboardUrl = jsonResponse.url_filtrada || this.TEST_DASHBOARD_URL;
+
+            if (jsonResponse.titulo) {
+              accumulatedMessage = jsonResponse.titulo;
+            }
+          } catch {
+            dashboardUrl = this.TEST_DASHBOARD_URL;
+          }
+
           const assistantResponse: IHistory = {
             role: 'assistant',
-            content: this.streamingMessage,
+            content: accumulatedMessage,
+            dashboardUrl: dashboardUrl!,
           };
 
           this.history.push(assistantResponse);
           this.streamingMessage = '';
+
+          if (dashboardUrl) {
+            this.currentDashboardUrl = dashboardUrl;
+            this.showDashboard = true;
+          }
 
           const truncatedHistory = this.history.slice(-this.MAX_HISTORY_ITEMS);
           this._localStorageService.saveObject(
@@ -116,7 +145,14 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   protected clearHistory() {
     this.history = [];
     this.streamingMessage = '';
+    this.currentDashboardUrl = null;
+    this.showDashboard = false;
     this._localStorageService.remove(LOCAL_STORAGE_KEY.HISTORY);
+  }
+
+  protected closeDashboard() {
+    this.showDashboard = false;
+    this.currentDashboardUrl = null;
   }
 
   private loadHistory() {
@@ -124,6 +160,16 @@ export class HomeComponent implements OnInit, AfterViewChecked {
       this._localStorageService.getObject<IHistory[]>(
         LOCAL_STORAGE_KEY.HISTORY
       ) || [];
+
+    const lastAssistantMessage = [...this.history]
+      .reverse()
+      .find((msg) => msg.role === 'assistant');
+
+    if (lastAssistantMessage?.dashboardUrl) {
+      this.currentDashboardUrl = lastAssistantMessage.dashboardUrl;
+      this.showDashboard = true;
+    }
+
     this.shouldScrollToBottom = true;
   }
 

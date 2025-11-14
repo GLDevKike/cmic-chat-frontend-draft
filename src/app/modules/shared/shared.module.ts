@@ -12,6 +12,7 @@ import { ToastComponent } from './components/toast/toast.component';
 import { ToastModule } from 'primeng/toast';
 import { InputComponent } from './components/input/input.component';
 import { InputTextModule } from 'primeng/inputtext';
+import { SafePipe } from './pipe/safe.pipe';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
     CardComponent,
     ToastComponent,
     InputComponent,
+    SafePipe,
   ],
   imports: [
     CommonModule,
@@ -38,6 +40,7 @@ import { InputTextModule } from 'primeng/inputtext';
     CardComponent,
     ToastComponent,
     InputComponent,
+    SafePipe,
   ],
 })
 export class SharedModule {}

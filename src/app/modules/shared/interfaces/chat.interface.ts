@@ -3,6 +3,7 @@ import { Role } from '../types/role.type';
 export interface IHistory {
   role: Role;
   content: string;
+  dashboardUrl?: string;
 }
 
 export interface IChatRequest {
