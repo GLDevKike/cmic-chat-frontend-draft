@@ -91,14 +91,14 @@ export class HomeComponent implements OnInit, AfterViewChecked {
 
       const filterStatus = response.data?.filter?.status;
 
+      if (response.data?.board?.board_url) {
+        dashboardUrl = response.data.board.board_url;
+      }
+
       if (filterStatus === 'valid' && response.success) {
         messageContent =
           response.data.chatbot?.natural_language ||
           'Respuesta procesada correctamente.';
-
-        if (response.data.board?.board_url) {
-          dashboardUrl = response.data.board.board_url;
-        }
       } else if (filterStatus === 'invalid') {
         const filterMessage =
           response.data.filter?.message || 'La pregunta no es pertinente.';
@@ -133,7 +133,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
 
       this.history.push(assistantResponse);
 
-      if (dashboardUrl && filterStatus === 'valid') {
+      if (dashboardUrl) {
         this.isDashboardLoading = true;
         this.currentDashboardUrl = dashboardUrl;
         this.showDashboard = true;
@@ -229,7 +229,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   private initForm() {
     this.question = new FormControl('', [
       Validators.required,
-      Validators.minLength(10),
+      Validators.minLength(1),
       Validators.maxLength(600),
     ]);
 
