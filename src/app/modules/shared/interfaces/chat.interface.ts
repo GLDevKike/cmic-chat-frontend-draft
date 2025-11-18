@@ -12,6 +12,6 @@ export interface IChatRequest {
 }
 export interface IChatResponse {
   success: boolean;
-  response: string;
+  data: Record<string, any>;
   error?: string;
 }
