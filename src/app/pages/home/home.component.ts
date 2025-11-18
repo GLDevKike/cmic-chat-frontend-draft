@@ -193,6 +193,16 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  protected reopenDashboard(url: string) {
+    this.currentDashboardUrl = url;
+    this.showDashboard = true;
+    this.isDashboardLoading = true;
+
+    this.dashboardLoadTimeout = setTimeout(() => {
+      this.isDashboardLoading = false;
+    }, 4000);
+  }
+
   private loadHistory() {
     this.history =
       this._localStorageService.getObject<IHistory[]>(

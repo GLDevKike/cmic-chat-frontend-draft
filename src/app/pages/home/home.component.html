@@ -50,6 +50,18 @@
               <span>{{ message.role === "user" ? "Tú" : "Asistente" }}</span>
             </div>
             <div class="message-content">{{ message.content }}</div>
+
+            @if (message.role === 'assistant' && message.dashboardUrl) {
+            <div class="message-actions">
+              <i class="pi pi-chart-bar"></i>
+              <span
+                class="dashboard-link"
+                (click)="reopenDashboard(message.dashboardUrl)"
+              >
+                Ver tablero
+              </span>
+            </div>
+            }
           </div>
         </div>
         } @if (isLoading) {
