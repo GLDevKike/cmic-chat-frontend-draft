@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   ButtonSeverity,
   ButtonSize,
@@ -16,9 +16,11 @@ export class ButtonComponent {
   @Input() type: ButtonType = 'button';
   @Input() severity!: ButtonSeverity;
   @Input() raised: boolean = false;
+  @Input() text: boolean = false;
   @Input() size!: ButtonSize;
   @Input() icon!: string;
   @Input() iconPosition: IconPosition = 'right';
   @Input() disabled: boolean = false;
   @Input() isLoading: boolean = false;
+  @Output() click = new EventEmitter<void>();
 }
