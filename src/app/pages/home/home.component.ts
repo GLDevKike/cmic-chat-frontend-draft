@@ -8,6 +8,7 @@ import {
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   IChatRequest,
+  IChatResponse,
   IHistory,
 } from '../../modules/shared/interfaces/chat.interface';
 import { HttpService } from '../../modules/shared/services/http.service';
@@ -30,12 +31,12 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   protected streamingMessage: string = '';
   protected currentDashboardUrl: string | null = null;
   protected showDashboard: boolean = false;
-
+  protected isDashboardLoading: boolean = false;
   private readonly TEST_DASHBOARD_URL =
     'https://dataviz-dot-mintic-indicadores-calidad-prd.ue.r.appspot.com/CD-historico/?Operador=Movistar&Indicador=Ping&Fecha=2024-01&Tecnolog%C3%ADa=4G&%C3%81mbito=Rural&Departamento=BOL%C3%8DVAR&Municipio=CARTAGENA%20DE%20INDIAS&Localidad=';
-
   private readonly MAX_HISTORY_ITEMS = 20;
   private shouldScrollToBottom = false;
+  private dashboardLoadTimeout: any;
 
   constructor(
     private readonly _httpService: HttpService,
@@ -54,7 +55,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  protected doSend() {
+  protected async doSend() {
     if (this.form.invalid || this.isLoading) return;
 
     const question = this.form.value.question.trim();
@@ -72,74 +73,68 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     this.form.reset();
     this.shouldScrollToBottom = true;
 
-    const prevHistory = this.history.slice(0, -1);
-    const requestHistory = [...prevHistory, userQuestion].slice(
-      -this.MAX_HISTORY_ITEMS
-    );
-
-    let accumulatedMessage = '';
-
-    this._httpService
-      .postStream<IChatRequest>(ENVIRONMENT.API_URL, {
+    try {
+      const response = await this._httpService.post<
+        IChatRequest,
+        IChatResponse
+      >(ENVIRONMENT.API_URL, {
         message: question,
-        history: requestHistory,
-      })
-      .subscribe({
-        next: (chunk) => {
-          accumulatedMessage += chunk;
-          this.streamingMessage = accumulatedMessage;
-          this.shouldScrollToBottom = true;
-        },
-        complete: () => {
-          let dashboardUrl: string | null = null;
-
-          try {
-            const jsonResponse = JSON.parse(accumulatedMessage);
-
-            dashboardUrl = jsonResponse.url_filtrada || this.TEST_DASHBOARD_URL;
-
-            if (jsonResponse.titulo) {
-              accumulatedMessage = jsonResponse.titulo;
-            }
-          } catch {
-            dashboardUrl = this.TEST_DASHBOARD_URL;
-          }
-
-          const assistantResponse: IHistory = {
-            role: 'assistant',
-            content: accumulatedMessage,
-            dashboardUrl: dashboardUrl!,
-          };
-
-          this.history.push(assistantResponse);
-          this.streamingMessage = '';
-
-          if (dashboardUrl) {
-            this.currentDashboardUrl = dashboardUrl;
-            this.showDashboard = true;
-          }
-
-          const truncatedHistory = this.history.slice(-this.MAX_HISTORY_ITEMS);
-          this._localStorageService.saveObject(
-            LOCAL_STORAGE_KEY.HISTORY,
-            truncatedHistory
-          );
-
-          this.history = truncatedHistory;
-          this.isLoading = false;
-          this.shouldScrollToBottom = true;
-        },
-        error: (err) => {
-          console.error('Error:', err);
-          this.history.push({
-            role: 'assistant',
-            content: 'Lo siento. Ocurrió un error al procesar tu petición.',
-          });
-          this.streamingMessage = '';
-          this.isLoading = false;
-          this.shouldScrollToBottom = true;
-        },
       });
+      console.log('🚀 ~ HomeComponent ~ doSend ~ response:', response);
+
+      let messageContent = '';
+      let dashboardUrl: string | null = null;
+
+      if (response.success && response.data) {
+        messageContent =
+          response.data['message'] ||
+          response.data['titulo'] ||
+          JSON.stringify(response.data);
+
+        dashboardUrl =
+          response.data['url_filtrada'] ||
+          response.data['embed'] ||
+          this.TEST_DASHBOARD_URL;
+      } else {
+        messageContent = response.error || 'No se pudo procesar la respuesta';
+      }
+
+      const assistantResponse: IHistory = {
+        role: 'assistant',
+        content: messageContent,
+        dashboardUrl: dashboardUrl || undefined,
+      };
+
+      this.history.push(assistantResponse);
+
+      if (dashboardUrl) {
+        this.isDashboardLoading = true;
+        this.currentDashboardUrl = dashboardUrl;
+        this.showDashboard = true;
+
+        this.dashboardLoadTimeout = setTimeout(() => {
+          this.isDashboardLoading = false;
+        }, 4000);
+      }
+
+      const truncatedHistory = this.history.slice(-this.MAX_HISTORY_ITEMS);
+      this._localStorageService.saveObject(
+        LOCAL_STORAGE_KEY.HISTORY,
+        truncatedHistory
+      );
+
+      this.history = truncatedHistory;
+      this.shouldScrollToBottom = true;
+    } catch (err) {
+      console.error('Error:', err);
+      this.history.push({
+        role: 'assistant',
+        content: 'Lo siento. Ocurrió un error al procesar tu petición.',
+      });
+      this.shouldScrollToBottom = true;
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   protected clearHistory() {
@@ -147,12 +142,25 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     this.streamingMessage = '';
     this.currentDashboardUrl = null;
     this.showDashboard = false;
+    this.isDashboardLoading = false;
+
+    if (this.dashboardLoadTimeout) {
+      clearTimeout(this.dashboardLoadTimeout);
+      this.dashboardLoadTimeout = null;
+    }
+
     this._localStorageService.remove(LOCAL_STORAGE_KEY.HISTORY);
   }
 
   protected closeDashboard() {
     this.showDashboard = false;
     this.currentDashboardUrl = null;
+    this.isDashboardLoading = false;
+
+    if (this.dashboardLoadTimeout) {
+      clearTimeout(this.dashboardLoadTimeout);
+      this.dashboardLoadTimeout = null;
+    }
   }
 
   private loadHistory() {
@@ -174,16 +182,14 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   }
 
   private scrollToBottom(): void {
-    try {
-      this.chatContainer.nativeElement.scrollTop =
-        this.chatContainer.nativeElement.scrollHeight;
-    } catch (err) {}
+    this.chatContainer.nativeElement.scrollTop =
+      this.chatContainer.nativeElement.scrollHeight;
   }
 
   private initForm() {
     this.question = new FormControl('', [
       Validators.required,
-      Validators.minLength(3),
+      Validators.minLength(10),
       Validators.maxLength(600),
     ]);
 
