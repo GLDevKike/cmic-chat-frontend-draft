@@ -3,10 +3,12 @@
   [type]="type"
   [severity]="severity"
   [raised]="raised"
+  [text]="text"
   [size]="size"
   [icon]="icon"
   [iconPos]="iconPosition"
   [disabled]="disabled"
   [loading]="isLoading"
+  (onClick)="click.emit()"
 >
 </p-button>
