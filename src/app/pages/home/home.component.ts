@@ -32,8 +32,6 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   protected currentDashboardUrl: string | null = null;
   protected showDashboard: boolean = false;
   protected isDashboardLoading: boolean = false;
-  private readonly TEST_DASHBOARD_URL =
-    'https://dataviz-dot-mintic-indicadores-calidad-prd.ue.r.appspot.com/CD-historico/?Operador=Movistar&Indicador=Ping&Fecha=2024-01&Tecnolog%C3%ADa=4G&%C3%81mbito=Rural&Departamento=BOL%C3%8DVAR&Municipio=CARTAGENA%20DE%20INDIAS&Localidad=';
   private readonly MAX_HISTORY_ITEMS = 20;
   private shouldScrollToBottom = false;
   private dashboardLoadTimeout: any;
@@ -61,7 +59,6 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     const question = this.form.value.question.trim();
     if (!question) return;
 
-    this.streamingMessage = '';
     this.isLoading = true;
 
     const userQuestion: IHistory = {
@@ -74,29 +71,58 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     this.shouldScrollToBottom = true;
 
     try {
+      const historyToSend = this.history.slice(0, -1).map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
       const response = await this._httpService.post<
         IChatRequest,
         IChatResponse
       >(ENVIRONMENT.API_URL, {
         message: question,
+        history: historyToSend.length > 0 ? historyToSend : undefined,
       });
+
       console.log('🚀 ~ HomeComponent ~ doSend ~ response:', response);
 
       let messageContent = '';
       let dashboardUrl: string | null = null;
 
-      if (response.success && response.data) {
-        messageContent =
-          response.data['message'] ||
-          response.data['titulo'] ||
-          JSON.stringify(response.data);
+      const filterStatus = response.data?.filter?.status;
 
-        dashboardUrl =
-          response.data['url_filtrada'] ||
-          response.data['embed'] ||
-          this.TEST_DASHBOARD_URL;
+      if (filterStatus === 'valid' && response.success) {
+        messageContent =
+          response.data.chatbot?.natural_language ||
+          'Respuesta procesada correctamente.';
+
+        if (response.data.board?.board_url) {
+          dashboardUrl = response.data.board.board_url;
+        }
+      } else if (filterStatus === 'invalid') {
+        const filterMessage =
+          response.data.filter?.message || 'La pregunta no es pertinente.';
+        const filterSuggestion = response.data.filter?.suggestion || '';
+
+        messageContent = filterMessage;
+        if (filterSuggestion) {
+          messageContent += `\n\n${filterSuggestion}`;
+        }
+      } else if (filterStatus === 'incomplete') {
+        const filterMessage =
+          response.data.filter?.message ||
+          'La información proporcionada está incompleta.';
+        const filterSuggestion = response.data.filter?.suggestion || '';
+
+        messageContent = filterMessage;
+        if (filterSuggestion) {
+          messageContent += `\n\n${filterSuggestion}`;
+        }
       } else {
-        messageContent = response.error || 'No se pudo procesar la respuesta';
+        messageContent =
+          response.data?.chatbot?.natural_language ||
+          response.error ||
+          'No se pudo procesar la respuesta';
       }
 
       const assistantResponse: IHistory = {
@@ -107,7 +133,7 @@ export class HomeComponent implements OnInit, AfterViewChecked {
 
       this.history.push(assistantResponse);
 
-      if (dashboardUrl) {
+      if (dashboardUrl && filterStatus === 'valid') {
         this.isDashboardLoading = true;
         this.currentDashboardUrl = dashboardUrl;
         this.showDashboard = true;
@@ -115,6 +141,10 @@ export class HomeComponent implements OnInit, AfterViewChecked {
         this.dashboardLoadTimeout = setTimeout(() => {
           this.isDashboardLoading = false;
         }, 4000);
+      } else {
+        this.showDashboard = false;
+        this.currentDashboardUrl = null;
+        this.isDashboardLoading = false;
       }
 
       const truncatedHistory = this.history.slice(-this.MAX_HISTORY_ITEMS);
