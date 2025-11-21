@@ -1,0 +1,13 @@
+runtime: nodejs20
+service: cmic-chat-frontend-angular
+
+handlers:
+  - url: /(.*\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|json))$
+    static_files: dist/cmic-chat-frontend-draft/browser/\1
+    upload: dist/cmic-chat-frontend-draft/browser/.*\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|json)$
+    secure: always
+
+  - url: /.*
+    static_files: dist/cmic-chat-frontend-draft/browser/index.html
+    upload: dist/cmic-chat-frontend-draft/browser/index.html
+    secure: always
