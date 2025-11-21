@@ -4,6 +4,7 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  OnDestroy,
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
@@ -21,7 +22,7 @@ import { LOCAL_STORAGE_KEY } from '../../modules/shared/constants/local-storage-
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit, AfterViewChecked {
+export class HomeComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
   protected form!: FormGroup;
@@ -44,6 +45,16 @@ export class HomeComponent implements OnInit, AfterViewChecked {
   ngOnInit(): void {
     this.initForm();
     this.loadHistory();
+    window.addEventListener('beforeunload', this.unloadHandler);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('beforeunload', this.unloadHandler);
+
+    if (this.dashboardLoadTimeout) {
+      clearTimeout(this.dashboardLoadTimeout);
+      this.dashboardLoadTimeout = null;
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -225,6 +236,10 @@ export class HomeComponent implements OnInit, AfterViewChecked {
     this.chatContainer.nativeElement.scrollTop =
       this.chatContainer.nativeElement.scrollHeight;
   }
+
+  private unloadHandler = () => {
+    this._localStorageService.remove(LOCAL_STORAGE_KEY.HISTORY);
+  };
 
   private initForm() {
     this.question = new FormControl('', [
