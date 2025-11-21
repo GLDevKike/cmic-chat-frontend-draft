@@ -1,0 +1,14 @@
+.gcloudignore
+.git
+.gitignore
+
+node_modules/
+
+src/
+.angular/
+.vscode/
+*.md
+tsconfig.json
+angular.json
+package.json
+package-lock.json
