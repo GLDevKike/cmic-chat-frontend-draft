@@ -1,4 +1,5 @@
-<div class="chat-layout">
+<div class="chat-layout" [class.has-dashboard]="showDashboard">
+  @if (!showDashboard) {
   <div class="chat-header">
     <img src="assets/images/logo-cmic.png" alt="CMIC Logo" class="logo" />
     <h1>¡Hola! Bienvenido</h1>
@@ -8,87 +9,159 @@
       respuestas claras y actualizadas por operador y tecnología.
     </p>
   </div>
+  }
 
-  <div class="chat-container">
-    <div class="chat-messages" #chatContainer>
-      @if (history.length === 0 && !isLoading) {
-      <div class="empty-state">
-        <i class="pi pi-comment"></i>
-        <h3>¿En qué puedo ayudarte hoy?</h3>
-        <p>Escribe tu pregunta abajo para comenzar</p>
-      </div>
-      } @for (message of history; track $index) {
-      <div
-        class="message-wrapper"
-        [class.user]="message.role === 'user'"
-        [class.assistant]="message.role === 'assistant'"
-      >
-        <div class="message-bubble">
-          <div class="message-header">
-            <i
-              [class]="
-                message.role === 'user' ? 'pi pi-user' : 'pi pi-sparkles'
-              "
-            ></i>
-            <span>{{ message.role === "user" ? "Tú" : "Asistente" }}</span>
-          </div>
-          <div class="message-content">{{ message.content }}</div>
-        </div>
-      </div>
-      } @if (isLoading && streamingMessage) {
-      <div class="message-wrapper assistant">
-        <div class="message-bubble streaming">
-          <div class="message-header">
-            <i class="pi pi-sparkles"></i>
-            <span>Asistente</span>
-          </div>
-          <div class="message-content">{{ streamingMessage }}</div>
-        </div>
-      </div>
-      } @if (isLoading && !streamingMessage) {
-      <div class="message-wrapper assistant">
-        <div class="message-bubble typing">
-          <div class="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+  <div class="main-content" [class.split-view]="showDashboard">
+    <div class="chat-card">
+      @if (showDashboard) {
+      <div class="chat-card-header">
+        <img src="assets/images/logo-cmic.png" alt="CMIC" class="header-logo" />
+        <div class="header-content">
+          <h2>¡Hola! Bienvenido</h2>
+          <p>
+            Pregunta sobre la cobertura, calidad del servicio, fallas reportadas
+            y ubicación de estaciones móviles en cualquier municipio de
+            Colombia.
+          </p>
         </div>
       </div>
       }
-    </div>
 
-    <div class="chat-input-container">
-      <div class="input-actions">
-        @if (history.length > 0) {
-        <button
-          type="button"
-          class="clear-btn"
-          (click)="clearHistory()"
-          title="Limpiar historial"
+      <div class="chat-messages" #chatContainer>
+        @if (history.length === 0 && !isLoading) {
+        <div class="empty-state">
+          <i class="pi pi-comment"></i>
+          <h3>¿En qué puedo ayudarte hoy?</h3>
+          <p>Escribe tu pregunta abajo para comenzar</p>
+        </div>
+        } @for (message of history; track $index) {
+        <div
+          class="message-wrapper"
+          [class.user]="message.role === 'user'"
+          [class.assistant]="message.role === 'assistant'"
         >
-          <i class="pi pi-trash"></i>
-        </button>
+          <div class="message-bubble">
+            <div class="message-header">
+              <i
+                [class]="
+                  message.role === 'user' ? 'pi pi-user' : 'pi pi-sparkles'
+                "
+              ></i>
+              <span>{{ message.role === "user" ? "Tú" : "Asistente" }}</span>
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+
+            @if (message.role === 'assistant' && message.dashboardUrl) {
+            <div class="message-actions">
+              <i class="pi pi-chart-bar"></i>
+              <span
+                class="dashboard-link"
+                (click)="reopenDashboard(message.dashboardUrl)"
+              >
+                Ver tablero
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+        } @if (isLoading) {
+        <div class="message-wrapper assistant">
+          <div class="loading-container">
+            <div class="loading-gif"></div>
+            <span class="loading-text">Pensando...</span>
+          </div>
+        </div>
         }
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="doSend()" class="chat-input-form">
-        <app-input
-          [control]="question"
-          variant="filled"
-          placeholder="Escribe tu pregunta aquí..."
-          (enterPressed)="doSend()"
-        ></app-input>
+      <div class="chat-input-container">
+        @if (history.length > 0) {
+        <div class="input-actions">
+          <app-button
+            type="button"
+            label="Limpiar"
+            icon="pi pi-trash"
+            iconPosition="left"
+            severity="danger"
+            [raised]="false"
+            size="small"
+            (click)="clearHistory()"
+            class="clear-action-btn"
+          ></app-button>
+        </div>
+        }
 
+        <form [formGroup]="form" (ngSubmit)="doSend()" class="chat-input-form">
+          <app-input
+            [control]="question"
+            variant="filled"
+            placeholder="Escribe tu pregunta aquí..."
+            (enterPressed)="doSend()"
+          ></app-input>
+
+          <app-button
+            [disabled]="form.invalid || isLoading"
+            [isLoading]="isLoading"
+            label=""
+            icon="pi pi-send"
+            iconPosition="right"
+            type="submit"
+            severity="info"
+          ></app-button>
+        </form>
+      </div>
+    </div>
+
+    @if (showDashboard && currentDashboardUrl) {
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <h2>Tablero de Indicadores</h2>
         <app-button
-          [disabled]="form.invalid || isLoading"
-          [isLoading]="isLoading"
+          type="button"
           label=""
-          icon="pi pi-send"
-          type="submit"
-          severity="info"
+          icon="pi pi-times"
+          severity="danger"
+          [raised]="true"
+          size="small"
+          (click)="closeDashboard()"
+          class="close-dashboard-action-btn"
         ></app-button>
-      </form>
+      </div>
+
+      <div class="dashboard-content">
+        @if (isDashboardLoading) {
+        <div class="dashboard-loading">
+          <div class="loading-gif-dashboard"></div>
+          <p>Cargando tablero...</p>
+        </div>
+        }
+
+        <iframe
+          [src]="currentDashboardUrl | safe : 'resourceUrl'"
+          frameborder="0"
+          class="dashboard-iframe"
+          [class.hidden]="isDashboardLoading"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+    }
+  </div>
+
+  @if (!showDashboard) {
+  <div class="quick-actions">
+    <div class="action-icon-wrapper">
+      <img src="assets/icons/icon-1.svg" alt="Indicador 1" />
+    </div>
+    <div class="action-icon-wrapper">
+      <img src="assets/icons/icon-2.svg" alt="Indicador 2" />
+    </div>
+    <div class="action-icon-wrapper">
+      <img src="assets/icons/icon-3.svg" alt="Indicador 3" />
+    </div>
+    <div class="action-icon-wrapper">
+      <img src="assets/icons/icon-4.svg" alt="Indicador 4" />
     </div>
   </div>
+  }
 </div>
