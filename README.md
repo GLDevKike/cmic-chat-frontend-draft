@@ -68,10 +68,10 @@ export const ENVIRONMENT = {
 1. **Crea el archivo de producción:**
 
 ```bash
-cp src/environments/environment.example.ts src/environments/environment.prod.ts
+cp src/environments/environment.example.ts src/environments/environment.ts
 ```
 
-2. **Edita `src/environments/environment.prod.ts`:**
+2. **Edita `src/environments/environment.ts`:**
 
 ```typescript
 export const ENVIRONMENT = {
@@ -133,23 +133,23 @@ src/
 │   └── pages/
 │       └── home/
 ├── assets/
-│   ├── images/
-│   └── gifs/
+│   ├── gifs/
+│   ├── icons/
+│   └── images/
 └── environments/
     ├── environment.example.ts  (versionado)
-    ├── environment.ts          (ignorado - dev)
-    └── environment.prod.ts     (ignorado - prod)
+    ├── environment.ts          (ignorado - dev / prod)
 ```
 
 ## Características
 
-- ✅ Chat interactivo con historial persistente
-- ✅ Integración con agente orquestador del CMIC
-- ✅ Visualización de tableros Looker embebidos
-- ✅ Validación de consultas (válidas, inválidas, incompletas)
-- ✅ Sugerencias contextuales de preguntas
-- ✅ Diseño responsive
-- ✅ Animaciones y transiciones suaves
+- Chat interactivo con historial persistente
+- Integración con agente orquestador del CMIC
+- Visualización de tableros Looker embebidos
+- Validación de consultas (válidas, inválidas, incompletas)
+- Sugerencias contextuales de preguntas
+- Diseño responsive
+- Animaciones y transiciones suaves
 
 ## Notas
 
@@ -157,4 +157,4 @@ Este es un borrador inicial, por lo que la estructura, componentes y estilos pue
 
 ---
 
-**Importante:** Nunca commitees los archivos `environment.ts` o `environment.prod.ts` ya que contienen información sensible. Usa siempre el archivo `.example` como referencia.
+**Importante:** Nunca commitees los archivos `environment.ts` ya que contienen información sensible. Usa siempre el archivo `.example` como referencia.
