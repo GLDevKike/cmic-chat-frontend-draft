@@ -95,8 +95,6 @@ export class HomeComponent implements OnInit, AfterViewChecked, OnDestroy {
         history: historyToSend.length > 0 ? historyToSend : undefined,
       });
 
-      console.log('🚀 ~ HomeComponent ~ doSend ~ response:', response);
-
       let messageContent = '';
       let dashboardUrl: string | null = null;
 
