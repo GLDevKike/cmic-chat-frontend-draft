@@ -107,6 +107,7 @@
 
     .split-view & {
         height: 100%;
+        max-height: none;
         min-height: unset;
     }
 }
